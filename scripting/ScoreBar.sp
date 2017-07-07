@@ -20,7 +20,15 @@ public void OnPluginStart()
 	teamPlay = FindConVar("mp_teamplay");
     HookEvent("player_death", Event_PlayerDied);
 	HookEvent("player_spawn", Event_PlayerSpawn);
+	HookEvent("player_disconnect", Event_PlayerDisconnect); 
 	
+}
+
+public void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast)
+{
+	if (GetConVarInt(SBar) == 1){
+		CreateTimer(0.3, updateScores);   //cause scores do not seem to be updated instantly
+	}	
 }
 
 public void Event_PlayerDied(Event event, const char[] name, bool dontBroadcast)
@@ -56,14 +64,14 @@ public Action updateScores(Handle timer)
 					clsecond = clmax;
 					max = PlayersScores[client];
 					clmax = client;
-					} else if (PlayersScores[client] > second){
+					} else if (PlayersScores[client] >= second){
 					second = PlayersScores[client];
 					clsecond = client;
 				}					
 			}
 		}
 		
-		decl color[4] = {255, 220, 0, 255};
+		decl color[4] = {255, 220, 0, 200};
 		decl String:maxname[255];
 		GetClientName(clmax, maxname, 255);
 		
@@ -77,10 +85,6 @@ public Action updateScores(Handle timer)
 			{
 				SetHudTextParamsEx(-1.0, 0.02, 999.0, color, color, 0, 0.0, 0.0, 0.0);
 				ShowHudText(client, 255, "№1: %d by %s, №2: %d by %s", max, maxname, second, secondname);		
-				//SetHudTextParamsEx(-1.0, 0.02, 999.0, color, color, 0, 0.0, 0.0, 0.0);
-				//ShowHudText(client, 255, "№1: %d by %s", max, maxname);
-				//SetHudTextParamsEx(-1.0, 0.06, 999.0, color, color, 0, 0.0, 0.0, 0.0);
-				//ShowHudText(client, 255, "№2: %d by %s", second, secondname);
 			}
 		}
 		
