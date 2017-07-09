@@ -24,6 +24,7 @@ public void OnPluginStart()
 	HookEvent("player_death", Event_PlayerDied);
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("player_disconnect", Event_PlayerDisconnect); 
+	HookEvent("player_team", Event_PlayerChangedTeam);
 }
 
 public void OnClientPutInServer(int client)
@@ -33,6 +34,7 @@ public void OnClientPutInServer(int client)
 
 public void OnClientDisconnect(int client)
 {
+	initiateUpdate();
 	if (client == defaultClient){
 		if (GetConVarInt(teamPlay) == 0 && GetClientCount(true) != 0){
 			for (new player = 1; player <= MaxClients; player++)
@@ -47,30 +49,36 @@ public void OnClientDisconnect(int client)
 	}
 }
 
+public void Event_PlayerChangedTeam(Event event, const char[] name, bool dontBroadcast)
+{
+    initiateUpdate();
+}
+
 public void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast)
+{
+    initiateUpdate();
+}
+
+public void Event_PlayerDied(Event event, const char[] name, bool dontBroadcast)
+{
+    initiateUpdate();
+}
+
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+{
+    initiateUpdate();
+}
+
+public void initiateUpdate()
 {
 	if (GetConVarInt(SBar) == 1){
 		CreateTimer(0.3, updateScores);   //cause scores do not seem to be updated instantly
 	}	
 }
 
-public void Event_PlayerDied(Event event, const char[] name, bool dontBroadcast)
-{
-	if (GetConVarInt(SBar) == 1){
-		CreateTimer(0.3, updateScores);   //cause scores do not seem to be updated instantly
-	}
-}
-
-public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
-{
-	if (GetConVarInt(SBar) == 1){
-		CreateTimer(0.3, updateScores);   //cause scores do not seem to be updated instantly
-	}
-}
-
 public Action updateScores(Handle timer)
 {
-	if (GetConVarInt(teamPlay) == 0 && GetClientCount(true) > 1){
+	if (GetConVarInt(teamPlay) == 0 && GetClientCount(true) > 1){ //Free for all, requires 2 players or more
 		new max = GetClientFrags(defaultClient);
 		new second = 0;
 		new clmax = defaultClient;		
@@ -109,10 +117,19 @@ public Action updateScores(Handle timer)
 				SetHudTextParamsEx(-1.0, 0.01, 999.0, color, color, 0, 0.0, 0.0, 0.0);
 				ShowHudText(client, 255, "№1: %s with %d frags", maxname, max);		
 				
-				SetHudTextParamsEx(-1.0, 0.05, 999.0, color, color, 0, 0.0, 0.0, 0.0);
-				ShowHudText(client, 254, "You are №%d with %d frags", getPlrPos(client), GetClientFrags(client));
+				//Special for spectators	
+				if (GetClientTeam(client) == 1)
+				{ 
+					SetHudTextParamsEx(-1.0, 0.05, 999.0, color, color, 0, 0.0, 0.0, 0.0);
+					ShowHudText(client, 254, "№2: %s with %d frags", secondname, second);
+				}else  //For non-spectators
+				{			
+					SetHudTextParamsEx(-1.0, 0.05, 999.0, color, color, 0, 0.0, 0.0, 0.0);
+					ShowHudText(client, 254, "You are №%d with %d frags", getPlrPos(client), GetClientFrags(client));
+				}
 			}
 		}		
+		
 		//For the first player
 		if (IsClientInGame(clmax) && !IsFakeClient(clmax) && IsClientAuthorized(clmax))
 		{
@@ -123,7 +140,8 @@ public Action updateScores(Handle timer)
 			ShowHudText(clmax, 254, "№2: %s with %d frags", secondname, second);
 		}		
 		
-		}else if (GetConVarInt(teamPlay) == 1){	 //For team deathmatch
+		//For team deathmatch
+		}else if (GetConVarInt(teamPlay) == 1){	 
 		for (new client = 1; client <= MaxClients; client++)
 		{
 			if (IsClientInGame(client) && !IsFakeClient(client) && IsClientAuthorized(client))
