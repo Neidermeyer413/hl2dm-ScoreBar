@@ -7,7 +7,7 @@ public Plugin myinfo =
 	author = "Neidermeyer",
 	description = "Quake3-style scorebar showing best player and clients score in deathmatch and team scores in team deathmatch",
 	version = "1.0",
-	url = ""
+	url = "http://sfc.my1.ru/forum/38-384-1"
 };
 
 new Handle:SBar;
